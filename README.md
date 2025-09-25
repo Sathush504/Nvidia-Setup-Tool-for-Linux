@@ -13,14 +13,6 @@ A user-friendly desktop application for Ubuntu/Debian Linux that automatically d
 - **Error Handling**: Comprehensive error handling with user-friendly messages
 - **Secure**: Proper sudo authentication and privilege management
 
-## Screenshots
-
-The application features a modern, dark-themed interface with:
-- System status cards showing GPU, driver, and CUDA information
-- Installation options with checkboxes
-- Real-time progress bar and console output
-- Professional styling with NVIDIA brand colors
-
 ## Requirements
 
 - **Operating System**: Ubuntu 20.04+ or Debian 11+
