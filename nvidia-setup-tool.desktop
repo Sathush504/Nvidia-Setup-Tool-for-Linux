@@ -1,0 +1,14 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=NVIDIA GPU Setup Tool
+Comment=Install NVIDIA drivers and CUDA toolkit
+Exec=nvidia-setup-tool
+Icon=video-display
+Terminal=false
+Categories=System;Settings;HardwareSettings;
+Keywords=NVIDIA;GPU;Driver;CUDA;Installation;
+StartupNotify=true
+MimeType=
+Path=
+
