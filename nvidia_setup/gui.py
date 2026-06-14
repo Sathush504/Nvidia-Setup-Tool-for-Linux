@@ -258,7 +258,7 @@ class NvidiaSetupApp:
         self._sb_disk = self._sidebar_row(info_f, "Disk", "—")
 
         # Version at bottom
-        tk.Label(side, text="v1.1.0  •  Python GUI", bg=SIDEBAR, fg=MUTED,
+        tk.Label(side, text="v2.0.0  •  Python GUI", bg=SIDEBAR, fg=MUTED,
                  font=("Segoe UI", 8)).pack(side=tk.BOTTOM, pady=12)
 
         # ── Main content ─────────────────────────────────────────────────────

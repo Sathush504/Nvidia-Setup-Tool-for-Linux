@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nvidia-setup-tool"
-version = "1.1.0"
+version = "2.0.0"
 description = "Pure-Python library and CLI for NVIDIA GPU driver and CUDA toolkit management on Ubuntu/Debian Linux"
 readme = "README.md"
 license = { file = "LICENSE" }

@@ -24,7 +24,7 @@ from nvidia_setup.exceptions import (
 )
 from nvidia_setup.installer import DriverInstaller, InstallOptions, InstallResult
 
-__version__ = "1.1.0"
+__version__ = "2.0.0"
 __author__ = "NVIDIA Setup Tool Contributors"
 __license__ = "MIT"
 
