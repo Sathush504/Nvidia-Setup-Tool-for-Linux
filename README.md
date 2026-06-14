@@ -160,3 +160,14 @@ This utility is designed for bare-metal installations. Direct driver installatio
 
 ### Secure Boot Issues
 If drivers install successfully but do not load after reboot, check your Secure Boot status. You may need to enroll the Machine Owner Key (MOK) using `mokutil` so the kernel can load the third-party NVIDIA modules.
+
+---
+
+## Changelog
+
+### Version 2.0.0
+- **Implementation Overhaul:** Rewrote the entire application from C to pure Python to remove compiler and local build dependencies.
+- **GUI Improvement:** Switched graphical interface implementation to standard Python Tkinter.
+- **Improved Password Prompting:** Re-implemented secure inline elevation checks to prevent incorrect sudo password reporting.
+- **Full Test Suite:** Added comprehensive unit and integration tests covering the CLI and GUI packages.
+
