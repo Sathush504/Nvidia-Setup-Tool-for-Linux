@@ -2,11 +2,10 @@
 
 import os
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
-
-from nvidia_setup.config import Config, load_config, _apply_env_overrides
+from nvidia_setup.config import Config, _apply_env_overrides, load_config
 
 
 class TestConfig:
@@ -119,3 +118,35 @@ class TestLoadConfig:
         cfg = load_config(toml_file)
         assert cfg.log_level == "DEBUG"
         assert cfg.apt_timeout_seconds == 999
+
+    def test_load_config_unknown_key(self, tmp_path: Path) -> None:
+        toml_file = tmp_path / "cfg.toml"
+        toml_file.write_text('unknown_key = "value"\n')
+        cfg = load_config(toml_file)
+        assert hasattr(cfg, "unknown_key") is False
+
+    def test_load_config_corrupt_toml(self, tmp_path: Path) -> None:
+        toml_file = tmp_path / "cfg.toml"
+        toml_file.write_text('invalid = [toml\n')
+        cfg = load_config(toml_file)
+        assert isinstance(cfg, Config)
+
+    def test_load_config_no_toml_parser(self, tmp_path: Path) -> None:
+        toml_file = tmp_path / "cfg.toml"
+        toml_file.write_text('log_level = "DEBUG"\n')
+        with patch("sys.version_info", (3, 10)), \
+             patch("sys.modules", {"tomllib": None, "tomli": None}):
+            # This triggers ModuleNotFoundError in _load_toml
+            cfg = load_config(toml_file)
+            assert isinstance(cfg, Config)
+
+    def test_load_config_tomli(self, tmp_path: Path) -> None:
+        toml_file = tmp_path / "cfg.toml"
+        toml_file.write_text('log_level = "DEBUG"\n')
+        mock_tomli = MagicMock()
+        mock_tomli.load.return_value = {"log_level": "DEBUG"}
+        with patch("sys.version_info", (3, 10)), \
+             patch("sys.modules", {"tomllib": None, "tomli": mock_tomli}):
+            cfg = load_config(toml_file)
+            assert cfg.log_level == "DEBUG"
+

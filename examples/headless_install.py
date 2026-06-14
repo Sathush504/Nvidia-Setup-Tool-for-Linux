@@ -1,5 +1,4 @@
-"""
-Example: Headless/automated driver installation.
+"""Example: Headless/automated driver installation.
 
 Demonstrates how to use DriverInstaller in a non-interactive script
 (e.g. in a CI/CD pipeline or provisioning script).

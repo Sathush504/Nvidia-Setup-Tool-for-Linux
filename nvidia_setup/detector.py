@@ -1,5 +1,4 @@
-"""
-System detection module for NVIDIA GPU, driver, and CUDA status.
+"""System detection module for NVIDIA GPU, driver, and CUDA status.
 
 This module provides the :class:`SystemDetector` class which uses standard
 Linux utilities (``lspci``, ``nvidia-smi``, ``nvcc``, ``lsb_release``) to
@@ -21,7 +20,6 @@ import shutil
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
 
 from nvidia_setup.exceptions import GPUNotFoundError, IncompatibleSystemError
 
@@ -73,6 +71,7 @@ class SystemInfo:
     warnings: list[str] = field(default_factory=list)
 
     def __str__(self) -> str:  # pragma: no cover
+        """Return a user-friendly string representation of system information."""
         lines = [
             "── System Information ──────────────────────────",
             f"  GPU         : {self.gpu_model} (×{self.gpu_count})"
@@ -155,7 +154,7 @@ class SystemDetector:
         logger.info("System detection complete.")
         return info
 
-    def assert_ready_for_install(self, info: Optional[SystemInfo] = None) -> SystemInfo:
+    def assert_ready_for_install(self, info: SystemInfo | None = None) -> SystemInfo:
         """Detect system state and raise if prerequisites are not met.
 
         Args:

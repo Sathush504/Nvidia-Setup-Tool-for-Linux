@@ -1,5 +1,4 @@
-"""
-Driver and CUDA installation engine.
+"""Driver and CUDA installation engine.
 
 Supports both apt-based (Ubuntu/Debian) and dnf-based (Fedora/RHEL) systems.
 Accepts an optional sudo password for GUI-driven authenticated installs.
@@ -7,20 +6,21 @@ Accepts an optional sudo password for GUI-driven authenticated installs.
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import os
 import shutil
 import subprocess
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable, Optional
 
 from nvidia_setup.config import Config, load_config
 from nvidia_setup.detector import SystemInfo
 from nvidia_setup.exceptions import (
-    InstallationError,
     IncompatibleSystemError,
+    InstallationError,
     NetworkError,
     PrivilegeError,
 )
@@ -53,6 +53,7 @@ class InstallResult:
     duration_seconds: float = 0.0
 
     def __str__(self) -> str:  # pragma: no cover
+        """Return a user-friendly string representation of the installation result."""
         status = "SUCCESS" if self.success else "FAILED"
         lines = [
             f"── Installation Result: {status} ──",
@@ -113,8 +114,8 @@ class DriverInstaller:
     def __init__(
         self,
         options: InstallOptions,
-        config: Optional[Config] = None,
-        sudo_password: Optional[str] = None,
+        config: Config | None = None,
+        sudo_password: str | None = None,
     ) -> None:
         self._options = options
         self._config = config or load_config()
@@ -129,7 +130,7 @@ class DriverInstaller:
     def install(
         self,
         info: SystemInfo,
-        progress_callback: Optional[ProgressCallback] = None,
+        progress_callback: ProgressCallback | None = None,
     ) -> InstallResult:
         """Execute the full installation workflow."""
         start = time.monotonic()
@@ -237,10 +238,7 @@ class DriverInstaller:
         if not fedora_ver or not fedora_ver.isdigit():
             # Fallback: query rpm directly
             rc, val = self._run_raw("rpm -E %fedora")
-            if rc == 0 and val.strip().isdigit():
-                fedora_ver = val.strip()
-            else:
-                fedora_ver = "40"  # reasonable default fallback
+            fedora_ver = val.strip() if rc == 0 and val.strip().isdigit() else "40"
 
         self._sudo(
             self._pkg_manager, "install", "-y",
@@ -410,10 +408,8 @@ class DriverInstaller:
     def _cleanup(self) -> None:
         keyring = Path(self._KEYRING_FILENAME)
         if keyring.exists():
-            try:
+            with contextlib.suppress(OSError):
                 keyring.unlink()
-            except OSError:
-                pass
 
 
 def _noop_callback(_fraction: float, _message: str) -> None:

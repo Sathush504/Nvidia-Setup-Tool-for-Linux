@@ -1,5 +1,4 @@
-"""
-Configuration management for the nvidia_setup library.
+"""Configuration management for the nvidia_setup library.
 
 Supports layered configuration from:
 1. Built-in defaults

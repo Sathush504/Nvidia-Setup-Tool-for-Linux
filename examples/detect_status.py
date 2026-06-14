@@ -1,5 +1,4 @@
-"""
-Example: Detecting system status programmatically.
+"""Example: Detecting system status programmatically.
 
 Run from the project root:
     python examples/detect_status.py

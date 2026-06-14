@@ -1,5 +1,4 @@
-"""
-Modern Python tkinter GUI for the NVIDIA GPU Setup Tool.
+"""Modern Python tkinter GUI for the NVIDIA GPU Setup Tool.
 
 Single-window application — detect, configure, authenticate, and install
 all from one place. No CLI interaction needed.
@@ -20,7 +19,6 @@ import sys
 import threading
 import tkinter as tk
 from tkinter import messagebox, scrolledtext, ttk
-from typing import Optional
 
 if platform.system() != "Linux":
     print("Error: Linux only.", file=sys.stderr)
@@ -29,7 +27,7 @@ if platform.system() != "Linux":
 from nvidia_setup.config import Config, load_config
 from nvidia_setup.detector import SystemDetector, SystemInfo
 from nvidia_setup.exceptions import NvidiaSetupError
-from nvidia_setup.installer import DriverInstaller, InstallOptions, _detect_pkg_manager
+from nvidia_setup.installer import DriverInstaller, InstallOptions
 from nvidia_setup.logging_utils import setup_logging
 
 # ── Palette ─────────────────────────────────────────────────────────────────
@@ -68,6 +66,7 @@ class QueueLogHandler(logging.Handler):
         self._q = q
 
     def emit(self, record: logging.LogRecord) -> None:
+        """Process the log record and push it to the GUI event queue."""
         level_map = {
             logging.DEBUG: "MUTED",
             logging.INFO: "INFO",
@@ -85,7 +84,7 @@ class SudoPasswordDialog(tk.Toplevel):
 
     def __init__(self, parent: tk.Tk) -> None:
         super().__init__(parent)
-        self.password: Optional[str] = None
+        self.password: str | None = None
         self.cancelled = False
 
         self.title("Authentication Required")
@@ -171,11 +170,11 @@ class SudoPasswordDialog(tk.Toplevel):
 class NvidiaSetupApp:
     """Full-featured NVIDIA Setup GUI — everything in one window."""
 
-    def __init__(self, root: tk.Tk, config: Optional[Config] = None) -> None:
+    def __init__(self, root: tk.Tk, config: Config | None = None) -> None:
         self._root = root
         self._cfg  = config or load_config()
         self._q: queue.Queue[tuple[str, object]] = queue.Queue()
-        self._info: Optional[SystemInfo] = None
+        self._info: SystemInfo | None = None
         self._busy = False
 
         # Attach custom logging handler
@@ -438,9 +437,12 @@ class NvidiaSetupApp:
         dry = self._dry_run.get()
 
         items = []
-        if self._want_driver.get(): items.append("• NVIDIA Driver")
-        if self._want_cuda.get():   items.append(f"• CUDA Toolkit ({self._cfg.cuda_package_name})")
-        if dry:                     items.append("  [DRY RUN — no changes will be made]")
+        if self._want_driver.get():
+            items.append("• NVIDIA Driver")
+        if self._want_cuda.get():
+            items.append(f"• CUDA Toolkit ({self._cfg.cuda_package_name})")
+        if dry:
+            items.append("  [DRY RUN — no changes will be made]")
 
         if not messagebox.askyesno(
             "Confirm Installation",
@@ -488,7 +490,7 @@ class NvidiaSetupApp:
         finally:
             self._push(_REENABLE, None)
 
-    def _install_worker(self, opts: InstallOptions, pw: Optional[str]) -> None:
+    def _install_worker(self, opts: InstallOptions, pw: str | None) -> None:
         def cb(fraction: float, msg: str) -> None:
             self._push(_PROGRESS, (fraction * 100, msg))
             self._push(_LOG, ("INFO", msg))
@@ -576,7 +578,8 @@ class NvidiaSetupApp:
             self._update_card(self._card_cuda, "Not installed", MUTED)
 
         # Sidebar
-        self._sb_gpu.config(text=info.gpu_model[:22] or "None", fg=SUCCESS if info.gpu_detected else ERROR)
+        gpu_color = SUCCESS if info.gpu_detected else ERROR
+        self._sb_gpu.config(text=info.gpu_model[:22] or "None", fg=gpu_color)
         self._sb_drv.config(text=info.driver_version if info.driver_installed else "—",
                             fg=SUCCESS if info.driver_installed else MUTED)
         self._sb_cuda.config(text=info.cuda_version if info.cuda_installed else "—",
@@ -596,7 +599,7 @@ class NvidiaSetupApp:
 
 # ── Entry points ─────────────────────────────────────────────────────────────
 
-def launch(config: Optional[Config] = None) -> None:
+def launch(config: Config | None = None) -> None:
     """Create the Tk root and run the event loop."""
     root = tk.Tk()
     root.tk_setPalette(background=BG, foreground=WHITE)

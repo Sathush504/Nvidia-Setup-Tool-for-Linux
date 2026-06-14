@@ -1,5 +1,4 @@
-"""
-nvidia_setup - Python library for NVIDIA GPU Driver and CUDA toolkit management.
+"""nvidia_setup - Python library for NVIDIA GPU Driver and CUDA toolkit management.
 
 This package provides a programmatic interface to detect, install, and configure
 NVIDIA GPU drivers and CUDA toolkit on Ubuntu/Debian Linux systems.  It is
@@ -14,16 +13,16 @@ Example:
     'NVIDIA GeForce RTX 4090'
 """
 
-from nvidia_setup.detector import SystemDetector, SystemInfo
-from nvidia_setup.installer import DriverInstaller, InstallOptions, InstallResult
 from nvidia_setup.config import Config, load_config
+from nvidia_setup.detector import SystemDetector, SystemInfo
 from nvidia_setup.exceptions import (
-    NvidiaSetupError,
     GPUNotFoundError,
     IncompatibleSystemError,
     InstallationError,
+    NvidiaSetupError,
     PrivilegeError,
 )
+from nvidia_setup.installer import DriverInstaller, InstallOptions, InstallResult
 
 __version__ = "1.1.0"
 __author__ = "NVIDIA Setup Tool Contributors"

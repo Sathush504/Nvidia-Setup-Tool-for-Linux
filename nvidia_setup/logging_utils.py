@@ -1,5 +1,4 @@
-"""
-Logging utilities for the nvidia_setup library.
+"""Logging utilities for the nvidia_setup library.
 
 Provides a single :func:`setup_logging` helper that configures the root
 ``nvidia_setup`` logger with sensible defaults (coloured console output and
@@ -15,8 +14,6 @@ from __future__ import annotations
 import logging
 import sys
 from pathlib import Path
-from typing import Optional
-
 
 # ANSI colour codes for terminal output
 _ANSI_RESET = "\033[0m"
@@ -49,7 +46,7 @@ class _ColouredFormatter(logging.Formatter):
 
 def setup_logging(
     level: str = "INFO",
-    log_file: Optional[str | Path] = None,
+    log_file: str | Path | None = None,
     *,
     propagate: bool = False,
 ) -> logging.Logger:

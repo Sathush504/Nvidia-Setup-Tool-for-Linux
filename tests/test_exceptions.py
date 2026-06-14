@@ -1,7 +1,6 @@
 """Test suite for nvidia_setup.exceptions."""
 
 import pytest
-
 from nvidia_setup.exceptions import (
     BuildError,
     ConfigurationError,

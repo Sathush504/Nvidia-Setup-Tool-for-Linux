@@ -1,5 +1,4 @@
-"""
-Command-line interface for the NVIDIA Setup Tool.
+"""Command-line interface for the NVIDIA Setup Tool.
 
 Sub-commands:
 

@@ -1,5 +1,4 @@
-"""
-Custom exception hierarchy for the nvidia_setup library.
+"""Custom exception hierarchy for the nvidia_setup library.
 
 All exceptions inherit from NvidiaSetupError, making it easy to catch any
 library-specific error with a single except clause.
@@ -23,6 +22,7 @@ class NvidiaSetupError(Exception):
         super().__init__(message)
 
     def __str__(self) -> str:
+        """Return a user-friendly string representation of the exception."""
         if self.details:
             return f"{self.message}\nDetails: {self.details}"
         return self.message
