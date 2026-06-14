@@ -1,0 +1,22 @@
+# NVIDIA Setup Tool Python Layer - Development Dependencies
+# Install with: pip install -r requirements-dev.txt
+
+# Production requirements
+-r requirements.txt
+
+# Testing
+pytest>=7.4.3
+pytest-cov>=4.1.0
+pytest-mock>=3.12.0
+
+# Type checking
+mypy>=1.7.1
+
+# Linting & formatting
+ruff>=0.1.9
+
+# Pre-commit hooks
+pre-commit>=3.6.0
+
+# TOML support for Python < 3.11
+tomli>=2.0.1

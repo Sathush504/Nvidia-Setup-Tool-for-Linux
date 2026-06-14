@@ -1,0 +1,38 @@
+# Poetry configuration for nvidia-setup-tool Python layer
+# Install Poetry: https://python-poetry.org/docs/#installation
+# Usage: poetry install
+
+[tool.poetry]
+name = "nvidia-setup-tool"
+version = "1.1.0"
+description = "Python library and CLI for NVIDIA GPU driver and CUDA toolkit management on Ubuntu/Debian Linux"
+authors = ["NVIDIA Setup Tool Contributors"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/Sathush504/Nvidia-Setup-Tool-for-Linux"
+keywords = ["nvidia", "gpu", "cuda", "driver", "linux"]
+classifiers = [
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+]
+packages = [{ include = "nvidia_setup" }]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+tomli = { version = "^2.0", python = "<3.11" }
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4"
+pytest-cov = "^4.1"
+pytest-mock = "^3.12"
+mypy = "^1.7"
+ruff = "^0.1"
+pre-commit = "^3.6"
+tomli = "^2.0"
+
+[tool.poetry.scripts]
+nvidia-setup = "nvidia_setup.cli:entrypoint"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,15 @@
+name: nvidia-setup-tool
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.10
+  - pip
+  - pip:
+    - tomli>=2.0.1; python_version < "3.11"
+    # Development extras (uncomment for dev environment)
+    # - pytest>=7.4
+    # - pytest-cov>=4.1
+    # - pytest-mock>=3.12
+    # - mypy>=1.7
+    # - ruff>=0.1

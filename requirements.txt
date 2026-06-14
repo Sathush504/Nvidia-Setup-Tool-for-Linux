@@ -1,0 +1,8 @@
+# NVIDIA Setup Tool Python Layer - Runtime Dependencies
+# Generated for Python 3.10+
+#
+# This project intentionally minimises runtime dependencies by relying on
+# the Python standard library for all production code.
+#
+# Optional: TOML config-file support on Python < 3.11
+tomli>=2.0.1; python_version < "3.11"
