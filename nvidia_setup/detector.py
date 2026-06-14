@@ -117,6 +117,7 @@ class SystemDetector:
     """
 
     _SUPPORTED_DISTROS = {"jammy", "noble", "bookworm", "bullseye", "focal"}
+    _SUPPORTED_DISTRO_IDS = {"ubuntu", "debian", "fedora", "arch", "archlinux"}
 
     def __init__(self, timeout: int = 10) -> None:
         if platform.system() != "Linux":
@@ -382,10 +383,14 @@ class SystemDetector:
                 "Secure Boot is enabled. Third-party NVIDIA kernel modules may"
                 " need to be signed (MOK enrollment)."
             )
-        if info.distro_codename not in self._SUPPORTED_DISTROS:
+        if (
+            info.distro_codename not in self._SUPPORTED_DISTROS
+            and info.distro_id not in self._SUPPORTED_DISTRO_IDS
+        ):
             info.warnings.append(
-                f"Distribution '{info.distro_codename}' is not officially supported."
-                " Installation may fail."
+                f"Distribution '{info.distro_id}' "
+                f"(codename: '{info.distro_codename}') is not officially supported. "
+                "Installation may fail."
             )
         if info.free_disk_gb < 5.0:
             info.warnings.append(

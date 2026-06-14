@@ -424,4 +424,48 @@ class TestInstallerDetailed:
                 "--enablerepo=rpmfusion-nonfree",
             )
 
+    def test_pacman_package_manager_flow(self) -> None:
+        opts = InstallOptions(install_driver=True, install_cuda=True)
+        def pm_mock(x: str) -> str | None:
+            return "/usr/bin/pacman" if x == "pacman" else None
+        with patch("shutil.which", side_effect=pm_mock):
+            installer = DriverInstaller(opts)
+            assert installer._pkg_manager == "pacman"
+
+            # Check steps: Update, Prerequisites, Driver, CUDA, Config env.
+            # But NOT add repository!
+            steps = installer._build_step_plan()
+            step_names = [name for name, _ in steps]
+            assert "Add NVIDIA repository" not in step_names
+            assert "Install NVIDIA driver" in step_names
+            assert "Install CUDA toolkit" in step_names
+
+            # Run steps with mock sudo
+            with patch.object(installer, "_sudo") as mock_sudo, \
+                 patch.object(installer, "_run_command") as mock_run:
+                installer._step_pkg_update(InstallResult())
+                mock_sudo.assert_any_call("pacman", "-Sy", "--noconfirm")
+
+                installer._step_install_prerequisites(InstallResult())
+                mock_sudo.assert_any_call(
+                    "pacman", "-S", "--needed", "--noconfirm", *installer._PACMAN_PREREQS
+                )
+
+                installer._step_install_driver(InstallResult())
+                mock_sudo.assert_any_call(
+                    "pacman", "-S", "--needed", "--noconfirm", "nvidia-dkms"
+                )
+
+                installer._step_install_cuda(InstallResult())
+                mock_sudo.assert_any_call(
+                    "pacman", "-S", "--needed", "--noconfirm", "cuda"
+                )
+
+                installer._step_configure_cuda_env(InstallResult())
+                mock_run.assert_called_once()
+                # Should configure path with /opt/cuda
+                args, _ = mock_run.call_args
+                assert "/opt/cuda" in args[0]
+
+
 

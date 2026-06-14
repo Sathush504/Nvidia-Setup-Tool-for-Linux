@@ -24,11 +24,12 @@ An utility for detecting, installing, and configuring NVIDIA GPU drivers and the
 - Ubuntu 20.04 or newer
 - Debian 11 or newer
 - Fedora 39 or newer
+- Arch Linux (rolling release)
 - System Architecture: `x86_64`
 
 ### Dependencies
 - Python 3.10 or newer
-- `tkinter` (on Ubuntu/Debian, install with `sudo apt-get install python3-tk`; on Fedora, install with `sudo dnf install python3-tkinter`)
+- `tkinter` (on Ubuntu/Debian: `sudo apt-get install python3-tk`; on Fedora: `sudo dnf install python3-tkinter`; on Arch Linux: `sudo pacman -S tk`)
 
 ---
 
@@ -154,6 +155,7 @@ ruff check
 If the graphical application fails to start with a `tkinter` import error:
 - **Debian/Ubuntu:** `sudo apt-get install python3-tk`
 - **Fedora:** `sudo dnf install python3-tkinter`
+- **Arch Linux:** `sudo pacman -S tk`
 
 ### WSL / Virtual Environments
 This utility is designed for bare-metal installations. Direct driver installation is blocked inside WSL because WSL utilizes GPU virtualization rather than standard driver packages.
@@ -167,6 +169,7 @@ If drivers install successfully but do not load after reboot, check your Secure 
 
 ### Version 2.0.0
 - **Implementation Overhaul:** Rewrote the entire application from C to pure Python to remove compiler and local build dependencies.
+- **Arch Linux Support:** Added native support for `pacman` and Arch Linux specific installation workflows (`nvidia-dkms`, `/opt/cuda`).
 - **GUI Improvement:** Switched graphical interface implementation to standard Python Tkinter.
 - **Improved Password Prompting:** Re-implemented secure inline elevation checks to prevent incorrect sudo password reporting.
 - **Full Test Suite:** Added comprehensive unit and integration tests covering the CLI and GUI packages.

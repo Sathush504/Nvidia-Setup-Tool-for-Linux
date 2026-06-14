@@ -70,8 +70,8 @@ class InstallResult:
 # ---------------------------------------------------------------------------
 
 def _detect_pkg_manager() -> str:
-    """Return 'apt', 'dnf', or 'yum' based on what's available."""
-    for pm in ("apt-get", "dnf", "yum"):
+    """Return 'apt', 'dnf', 'yum', or 'pacman' based on what's available."""
+    for pm in ("apt-get", "dnf", "yum", "pacman"):
         if shutil.which(pm):
             return pm.replace("-get", "")  # normalise 'apt-get' → 'apt'
     return "apt"  # default
@@ -110,6 +110,7 @@ class DriverInstaller:
         "lsb-release", "build-essential", "dkms",
     ]
     _DNF_PREREQS = ["curl", "wget", "dkms", "kernel-devel", "kernel-headers"]
+    _PACMAN_PREREQS = ["dkms", "linux-headers", "wget", "curl"]
 
     def __init__(
         self,
@@ -173,6 +174,7 @@ class DriverInstaller:
     def _build_step_plan(self) -> list[tuple[str, Callable[[InstallResult], None]]]:
         """Build ordered install steps based on options and package manager."""
         is_apt = self._pkg_manager == "apt"
+        is_pacman = self._pkg_manager == "pacman"
 
         steps: list[tuple[str, Callable[[InstallResult], None]]] = [
             ("Update package lists", self._step_pkg_update),
@@ -185,7 +187,7 @@ class DriverInstaller:
                     ("Add NVIDIA repository", self._step_add_nvidia_repo_apt),
                     ("Update package lists (post-repo)", self._step_pkg_update),
                 ]
-            else:
+            elif not is_pacman:
                 steps.append(("Add NVIDIA repository", self._step_add_nvidia_repo_dnf))
 
         if self._options.install_driver:
@@ -206,6 +208,8 @@ class DriverInstaller:
     def _step_pkg_update(self, _r: InstallResult) -> None:
         if self._pkg_manager == "apt":
             self._sudo("apt-get", "update", "-y")
+        elif self._pkg_manager == "pacman":
+            self._sudo("pacman", "-Sy", "--noconfirm")
         else:
             self._sudo(self._pkg_manager, "check-update", "--assumeyes",
                        ignore_rc=100)  # dnf returns 100 when updates are available
@@ -213,6 +217,8 @@ class DriverInstaller:
     def _step_install_prerequisites(self, _r: InstallResult) -> None:
         if self._pkg_manager == "apt":
             self._sudo("apt-get", "install", "-y", *self._APT_PREREQS)
+        elif self._pkg_manager == "pacman":
+            self._sudo("pacman", "-S", "--needed", "--noconfirm", *self._PACMAN_PREREQS)
         else:
             self._sudo(self._pkg_manager, "install", "-y", *self._DNF_PREREQS)
 
@@ -250,6 +256,8 @@ class DriverInstaller:
         pkg = self._config.driver_version
         if self._pkg_manager == "apt":
             self._sudo("apt-get", "install", "-y", pkg or "cuda-drivers")
+        elif self._pkg_manager == "pacman":
+            self._sudo("pacman", "-S", "--needed", "--noconfirm", pkg or "nvidia-dkms")
         else:
             # Fedora: akmod-nvidia is the standard DKMS-based NVIDIA driver
             self._sudo(self._pkg_manager, "install", "-y",
@@ -258,15 +266,18 @@ class DriverInstaller:
     def _step_install_cuda(self, _r: InstallResult) -> None:
         if self._pkg_manager == "apt":
             self._sudo("apt-get", "install", "-y", self._config.cuda_package_name)
+        elif self._pkg_manager == "pacman":
+            self._sudo("pacman", "-S", "--needed", "--noconfirm", "cuda")
         else:
             # Fedora CUDA via RPM Fusion / NVIDIA repo
             self._sudo(self._pkg_manager, "install", "-y",
                        "cuda-toolkit", "cuda-libraries", "--enablerepo=rpmfusion-nonfree")
 
     def _step_configure_cuda_env(self, _r: InstallResult) -> None:
+        cuda_path = "/opt/cuda" if self._pkg_manager == "pacman" else "/usr/local/cuda"
         env_lines = [
-            "export PATH=/usr/local/cuda/bin${PATH:+:$PATH}",
-            "export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}",
+            f"export PATH={cuda_path}/bin${{PATH:+:$PATH}}",
+            f"export LD_LIBRARY_PATH={cuda_path}/lib64${{LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}}",
         ]
         if self._options.cuda_env_system_wide:
             target = Path("/etc/profile.d/cuda.sh")
