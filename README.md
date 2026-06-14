@@ -1,244 +1,129 @@
-# NVIDIA GPU Setup Tool
+# NVIDIA GPU Setup Tool for Linux
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Platform: Linux](https://img.shields.io/badge/platform-Linux-lightgrey.svg)](https://www.kernel.org/)
-[![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+An utility for detecting, installing, and configuring NVIDIA GPU drivers and the CUDA toolkit on Linux. This tool provides both a graphical user interface (GUI) and a command-line interface (CLI) to assist with setup.
 
-A 100% pure Python, zero-compile-dependency toolkit and GUI for detecting, installing, and configuring NVIDIA GPU drivers and the CUDA toolkit on Linux.
-
-Compatible with **Ubuntu 20.04–24.04**, **Debian 11–12**, and **Fedora 39–44**.
-
----
-
-## Table of Contents
-
-- [Features](#features)
-- [Requirements](#requirements)
-- [Quick Start](#quick-start)
-- [Installation Options](#installation-options)
-- [GUI Application](#gui-application)
-- [CLI Usage](#cli-usage)
-- [Python API](#python-api)
-- [Configuration](#configuration)
-- [Running Tests](#running-tests)
-- [Project Structure](#project-structure)
-- [Troubleshooting](#troubleshooting)
+> **Implementation Note:** This application was originally implemented in C. It has since been rewritten entirely in Python to eliminate compilation requirements, remove build toolchain dependencies (such as `gcc` or `make`), and improve overall maintainability.
 
 ---
 
 ## Features
 
-- **100% Pure Python**: Zero C compilation, no `gcc`, `make`, or GTK3 build dependencies.
-- **Modern Desktop GUI**: Sleek, NVIDIA-themed dark mode interface built in `tkinter` with a multi-threaded execution queue.
-- **Cross-Distribution Package Manager Support**: Automated package handling for both `apt` (Debian/Ubuntu) and `dnf` (Fedora).
-- **Inline sudo Password Elevation**: Input sudo passwords directly in the GUI with secure `sudo -S` input piping.
-- **Real-Time Output Log Console**: Colour-coded, scrollable terminal output console displaying detailed subprocess output.
-- **Automatic GPU Detection** via `lspci` — identifies NVIDIA GPU model, Rev, and count.
-- **Driver Status Verification** via `nvidia-smi` — reports installed driver versions.
-- **CUDA Detection** via `nvcc` — checks current CUDA version.
-- **WSL Detection & Safeguard** — blocks accidental desktop installations inside WSL environments.
-- **Secure Boot & Disk Space Pre-Checks** — pre-flight verification to prevent installation failures.
-- **Dry-run Mode** — preview commands and log outputs without making any changes to the system.
+- **System Detection:** Identifies NVIDIA GPU models, current driver versions, and CUDA installations using system utilities (`lspci`, `nvidia-smi`, and `nvcc`).
+- **Pre-flight Validation:** Checks for WSL environments, Secure Boot status, system architecture, minimum disk space, and network connectivity before attempting installation.
+- **Cross-Distribution Support:** Handles package installation for both `apt` (Debian/Ubuntu) and `dnf` (Fedora).
+- **GUI and CLI Interfaces:** Includes a graphical application built with `tkinter` and a standard terminal interface.
+- **Privilege Elevation:** Prompts for sudo passwords via a GUI dialog when run in graphical mode, using standard piped input to authenticate subprocess actions.
+- **Real-Time Logging:** Outputs command execution progress and subprocess output to a log console or CLI progress bar.
+- **Dry-run Mode:** Allows simulating the installation steps to preview executed commands without modifying the system.
 
 ---
 
 ## Requirements
 
-### System
-- **OS**: Ubuntu 20.04+, Debian 11+, or Fedora 39+
-- **Architecture**: x86_64 (64-bit)
-- **Privileges**: Sudo access (configured via NOPASSWD or provided in GUI/prompt)
+### Supported Operating Systems
+- Ubuntu 20.04 or newer
+- Debian 11 or newer
+- Fedora 39 or newer
+- System Architecture: `x86_64`
 
-### Python Environment
-- Python 3.10+
-- `tkinter` library (supplied by python stdlib; on Ubuntu/Debian run `sudo apt-get install python3-tk`)
-
----
-
-## Quick Start
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/Sathush504/Nvidia-Setup-Tool-for-Linux.git
-cd Nvidia-Setup-Tool-for-Linux
-
-# 2. Install the package in development mode
-pip install -e ".[dev]"
-
-# 3. Launch the modern desktop GUI
-nvidia-setup
-```
+### Dependencies
+- Python 3.10 or newer
+- `tkinter` (on Ubuntu/Debian, install with `sudo apt-get install python3-tk`; on Fedora, install with `sudo dnf install python3-tkinter`)
 
 ---
 
-## Installation Options
+## Installation
 
-### pip
+### From Source
 
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Sathush504/Nvidia-Setup-Tool-for-Linux.git
+   cd Nvidia-Setup-Tool-for-Linux
+   ```
+
+2. Install the package in editable mode with development dependencies:
+   ```bash
+   pip install -e ".[dev]"
+   ```
+
+### Using Poetry
+
+If you prefer Poetry for dependency management:
 ```bash
-# From PyPI (once published)
-pip install nvidia-setup-tool
-
-# Direct from GitHub repository
-pip install "git+https://github.com/Sathush504/Nvidia-Setup-Tool-for-Linux.git"
-
-# Development / Editable mode
-pip install -e ".[dev]"
-```
-
-### Poetry
-
-```bash
-# Install dependencies and project
 poetry install
-
-# Run the GUI
-poetry run nvidia-setup
 ```
 
 ---
 
-## GUI Application
+## Usage
 
-To launch the modern desktop GUI, simply execute:
+### Graphical Interface
+
+To launch the GUI:
 ```bash
 nvidia-setup
 ```
-Alternatively, you can run the GUI package directly:
+Or run the module directly:
 ```bash
 python -m nvidia_setup
 ```
 
-### GUI Features:
-- **System Status Cards**: Real-time visual status dots (Green = Installed, Yellow = Not Installed, Red = Error) for GPUs, Drivers, and CUDA.
-- **Configure Installation Options**: Interactively select Driver and/or CUDA Toolkit with checkboxes.
-- **Authentication Box**: Secure password field to authenticate sudo commands without leaving the GUI.
-- **Live Output Log Console**: Prints execution status, warnings, and subprocess logs in real-time.
+The GUI allows you to inspect the detected GPU/driver/CUDA status, select components to install (Driver and/or CUDA Toolkit), enter your sudo password securely, and monitor the installation logs.
 
----
+### Command-Line Interface
 
-## CLI Usage
-
-For programmatic use and CLI-only environments, the tool provides specific commands:
-
-```
-usage: nvidia-setup [-h] [--version] [--log-level {DEBUG,INFO,WARNING,ERROR}]
-                    [--log-file PATH] [--config PATH]
-                    {detect,install,gui} ...
-```
-
-### `detect` — Show system status
+The CLI offers subcommands for automated or headless environments:
 
 ```bash
-# Human-readable output
+# Display general help
+nvidia-setup --help
+
+# Detect system hardware and driver status
 nvidia-setup detect
 
-# Machine-readable JSON output
+# Detect system and export status as JSON
 nvidia-setup detect --json
-```
 
-**Sample output:**
-```
-── System Information ──────────────────────────
-  GPU         : NVIDIA Corporation GB207M [GeForce RTX 5050 Max-Q] (×2)
-  Driver      : 595.80
-  CUDA        : Not installed
-  Distro      : fedora 44 (n/a)
-  Arch        : x86_64
-  Kernel      : 7.0.12-200.fc44.x86_64
-  WSL         : No
-  Secure Boot : Disabled
-  Free Disk   : 23.2 GB
-────────────────────────────────────────────────
-```
-
-### `install` — Install Driver and/or CUDA via CLI
-
-```bash
-# Install driver only (interactive)
+# Install the NVIDIA driver (interactive confirmation)
 nvidia-setup install --driver
 
-# Install CUDA toolkit only
-nvidia-setup install --cuda
-
-# Install both (non-interactive, skip confirmation)
+# Install both driver and CUDA toolkit without interactive prompts
 nvidia-setup install --driver --cuda --yes
 
-# Dry-run — preview commands without executing
+# Perform a dry-run simulation of the installation
 nvidia-setup install --driver --cuda --dry-run
-```
-
----
-
-## Python API
-
-You can import the core detection and installation modules in your own Python projects:
-
-```python
-from nvidia_setup import SystemDetector, DriverInstaller, InstallOptions
-
-# --- System Detection ---
-detector = SystemDetector()
-info = detector.detect()
-
-print(f"GPU: {info.gpu_model}")
-print(f"Driver version: {info.driver_version}")
-print(f"CUDA version: {info.cuda_version}")
-
-# --- Validate before installing ---
-try:
-    info = detector.assert_ready_for_install()
-except Exception as e:
-    print(f"System not ready: {e}")
-
-# --- Trigger Installation ---
-options = InstallOptions(
-    install_driver=True,
-    install_cuda=True,
-    dry_run=False,
-)
-
-def on_progress(fraction: float, message: str) -> None:
-    print(f"[{int(fraction*100):3d}%] {message}")
-
-installer = DriverInstaller(options, sudo_password="your_secure_password")
-result = installer.install(info, progress_callback=on_progress)
-
-print(f"Success: {result.success}")
-print(f"Reboot required: {result.reboot_required}")
 ```
 
 ---
 
 ## Configuration
 
-### Config file (TOML)
+You can customize runtime defaults using a TOML configuration file located at `~/.config/nvidia-setup/config.toml` or a project-local `nvidia-setup.toml`.
 
-You can customize the installer by creating a configuration file at `~/.config/nvidia-setup/config.toml` or a project-local `nvidia-setup.toml`:
+### Example Configuration
 
 ```toml
-# Logging
+# Logging settings
 log_level = "INFO"
 log_file = "/var/log/nvidia-setup.log"
 
-# CUDA version to install
+# Target CUDA package suffix
 cuda_version = "12-6"
 
-# Execution timeout in seconds
+# Package manager timeout in seconds
 apt_timeout_seconds = 600
 
-# Minimum free disk space before installation
+# Minimum free disk space threshold (in GB)
 min_free_disk_gb = 5.0
 
-# Network check settings
+# Network reachability check settings
 network_check_host = "8.8.8.8"
-network_check_count = 1
 ```
 
-### Environment variables
+### Environment Overrides
 
-All config keys can be overridden with the `NVIDIA_SETUP_` prefix:
+Any configuration parameter can be overridden using environment variables prefixed with `NVIDIA_SETUP_`:
 ```bash
 export NVIDIA_SETUP_LOG_LEVEL=DEBUG
 export NVIDIA_SETUP_CUDA_VERSION=12-6
@@ -246,59 +131,32 @@ export NVIDIA_SETUP_CUDA_VERSION=12-6
 
 ---
 
-## Running Tests
+## Development and Testing
 
-All CLI/GUI functions are covered by unit tests running on mocked shell subprocesses to ensure safety in test environments:
+The test suite runs on mocked subprocesses and does not perform active package modifications on your system.
 
 ```bash
-# Run pytest test suite
+# Run all unit tests
 pytest
 
 # Run tests with verbose output
 pytest -v
 
-# Run formatting and lint checks
-ruff check nvidia_setup/ tests/
-```
-
----
-
-## Project Structure
-
-```
-Nvidia-Setup-Tool-for-Linux/
-├── nvidia_setup/               # Core Python Package
-│   ├── __init__.py             # Public API exports
-│   ├── cli.py                  # CLI argument parsing
-│   ├── detector.py             # System hardware & platform detection
-│   ├── installer.py            # Cross-distro installation engine (apt & dnf)
-│   ├── gui.py                  # Tkinter-based modern Dark Mode GUI
-│   ├── config.py               # Config parsing (TOML & env vars)
-│   ├── exceptions.py           # Custom exception classes
-│   └── logging_utils.py        # Formatting terminal and file logs
-├── tests/                      # Automated test suite
-│   ├── test_cli.py
-│   ├── test_config.py
-│   ├── test_detector.py
-│   ├── test_exceptions.py
-│   ├── test_gui.py
-│   └── test_installer.py
-├── pyproject.toml              # Build backend and packaging dependencies
-├── requirements.txt            # Runtime dependencies
-└── README.md                   # Project documentation
+# Run lint and style checks
+ruff check
 ```
 
 ---
 
 ## Troubleshooting
 
-### Tkinter is not installed / Import Error
-If you receive a tkinter import error when launching the GUI:
-- **Ubuntu/Debian**: Run `sudo apt-get install python3-tk`
-- **Fedora**: Run `sudo dnf install python3-tkinter`
+### Tkinter Import Errors
+If the graphical application fails to start with a `tkinter` import error:
+- **Debian/Ubuntu:** `sudo apt-get install python3-tk`
+- **Fedora:** `sudo dnf install python3-tkinter`
 
-### WSL / Virtual Machine Installation
-Drivers cannot be installed in WSL or VM environments lacking direct GPU passthrough. Verify that the GPU is passed through or run on a bare-metal Linux installation.
+### WSL / Virtual Environments
+This utility is designed for bare-metal installations. Direct driver installation is blocked inside WSL because WSL utilizes GPU virtualization rather than standard driver packages.
 
-### Secure Boot / Driver Blocked
-If your drivers install but fail to load on system restart, Secure Boot may require signing. Enroll your MOK key using `mokutil` and enroll at BIOS startup.
+### Secure Boot Issues
+If drivers install successfully but do not load after reboot, check your Secure Boot status. You may need to enroll the Machine Owner Key (MOK) using `mokutil` so the kernel can load the third-party NVIDIA modules.
